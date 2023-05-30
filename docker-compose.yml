@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  php:
+    build:
+        context: .
+        dockerfile: Dockerfile
+#        args:
+#          - http_proxy=http://192.168.198.94:7890
+#          - https_proxy=http://192.168.198.94:7890
+    image: php:tmp
+    working_dir: /www
+    volumes:
+        - ./:/www/:rw
+#    command:
+#      - /bin/bash
+#        - -c
+#        - |
+#        php src/main.php
+# q: how to keep container running?
+# q: how to run multiple commands by docker exec?
+# q: how to run multiple commands by docker-compose exec?
+# q: how to run multiple commands by docker-compose run?
+# q: how to run multiple commands by docker-compose up?
+# q: how to run multiple commands by docker-compose start?
+
+

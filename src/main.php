@@ -25,7 +25,7 @@ class MYPDF extends TCPDF {
 
     //Page header height
     private int $headerHeight = 30;
-    private int $footHeight = 10;
+    private int $footHeight = 15;
     public function Header():void {
         $border = 0;
         // Set font
@@ -55,7 +55,7 @@ class MYPDF extends TCPDF {
     // Page footer
     public function Footer():void {
         // Position at 15 mm from bottom
-        $this->setY(-15);
+        $this->setY(-$this->footHeight);
         $this->setFont($this->font, 'B', 8);
         $cellWidth = $this->getBodyWidth() / 2;
         // Page number
@@ -123,6 +123,8 @@ class MYPDF extends TCPDF {
     public function writeTableRowsInBody(array $tableRows): void {
         // 设置字体
         $this->setFont($this->font, '', 9);
+        // 在空白页面中先计算出每一行的可能的最大高度
+        $indexMapCellHeight = $this->_calculateRowMaxHeight($tableRows);
         foreach ($tableRows as $rowIndex => $row) {
             $y = $this->GetY();
             $x = $this->_sideMargin;
@@ -257,9 +259,12 @@ class MYPDF extends TCPDF {
             }
             // 是否还有下一列，有则判断当前页面有没有足够的空间写入新的一行表格数据
             if (count($tableRows) > $rowIndex + 1) {
-                $cellHeight = $this->calculateGetRowMaxHeight($tableRows[$rowIndex + 1]);
+                $cellHeight = $indexMapCellHeight[$rowIndex + 1];
                 // 如果页面的高度不足够写新的一行，则添加新的一页
-                $this->_getMaxYInBody() < $this->GetY() + $cellHeight && $this->AddPage();
+                $maxHeight = $this->getPageHeight() - $this->footHeight;
+                if ($this->GetY() + $cellHeight + 10 > $maxHeight) {
+                     $this->AddPage();
+                }
             }
         }
     }
@@ -580,12 +585,14 @@ class MYPDF extends TCPDF {
 
     public function writeDetail(array $detailItems): void
     {
-        foreach ($detailItems as $detailItemIndex => $item) {
-            $y = $this->GetY();
+        $y = $this->GetY();
+        foreach ($detailItems as $item) {
+            // 写入标题
             $x = $this->_sideMargin;
+            $textHeight = 10;
             $this->MultiCell(
                 $this->getBodyWidth(),
-                0,
+                $textHeight,
                 $item['title'],
                 $border=0,
                 $align='C',
@@ -595,38 +602,54 @@ class MYPDF extends TCPDF {
                 $y,
                 $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0, $valign='M', $fitcell=true,
             );
+            $y += $textHeight;
             foreach ($item['images'] as $index => $image) {
                 $file = __DIR__ . "/{$image}";
                 $imageHeight = 100;
                 $imageWidth = $this->getBodyWidth();
-                $y = $this->GetY();
-                if ($this->_getMaxYInBody() - $y - $imageHeight - $this->footHeight < 0) {
+                $headerHeight = 27;
+                if ($this-> getPageHeight() - $this->footHeight - $y < $imageHeight) {
                     $this->AddPage();
-                    $y = $this->GetY();
+                    $y = $headerHeight;
                 }
                 $this->Image(
                     $file,
                     $x,
-                    $y + 27,
+                    $y,
                     $imageWidth,
                     $imageHeight,
                     '',
                     '',
-                    '',
+                    'C',
                     true,
-                    300
+                    300,
+                    $palign='',
+                    $ismask=false,
+                    $imgmask=false,
                 );
-                if ($this->_getMaxYInBody() - $y - $imageHeight < $imageHeight &&
-                    (
-                        count($item['images']) > $index + 1
-                        ||
-                        count($detailItems) > $detailItemIndex + 1
-                    )
-                ) {
-                    $this->AddPage();
-                }
+                $y += $imageHeight;
             }
         }
+    }
+
+    private function _calculateRowMaxHeight(array $tableRows): array
+    {
+        $result = [];
+        foreach ($tableRows as $row) {
+            $maxHeight = 0;
+            $index = 2;
+            // 计算出产品字段内容需要的高度
+            $headerInfo = SeedData::getHeaderCellByIndex($index, $this->getBodyWidth());
+            $text = $row[$index];
+            $maxHeight = max($this->getStringHeight($headerInfo['width'], $text), $maxHeight);
+            // 计算出产品介绍字段内容需要的高度
+            $index = 8;
+            $text = $row[$index];
+            $headerInfo = SeedData::getHeaderCellByIndex($index, $this->getBodyWidth());
+            $maxHeight = max($this->getStringHeight($headerInfo['width'], $text), $maxHeight);
+            $result = array(...$result, $maxHeight);
+        }
+        return $result;
     }
 }
 
@@ -667,9 +690,9 @@ $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
 
 // add a page
 $pdf->AddPage();
-
 $pdf->writeFirstTableRowInBody( Seeds\SeedData::getHeaderRowData($pdf->getBodyWidth()) ); // 写入表格头部
 $pdf->writeTableRowsInBody( Seeds\SeedData::getTableRowData()); // 写入表格数据
+//写入表格最后一行
 $pdf->writeLastRow([
     'total' => '￥25054.00', // 总费用,
     // 服务费
@@ -683,7 +706,8 @@ $pdf->writeLastRow([
         // 打折前的费用
         'originalFee' => '￥25223.00',
     ]
-]); //写入表格最后一行
+]);
+// 写入用户信息
 $pdf->writeUserInfo([
     'name' => '张三',
     'category' => 'xxx种类',
@@ -691,19 +715,19 @@ $pdf->writeUserInfo([
     'phone' => '1342xxxxx90',
     'qrCode' => 'https://partner.orvibo.com//share/#/design/eyUcBzJ0ZW5hbnRJZCI6MSwib3JnSWQiOjE0NjMsImludGVudGlvbklkIjo0NjQwNTh9',
 
-]); // 写入用户信息
-// 写入详细说明
+]);
+//// 写入详细说明
 $pdf->writeDetail([
     [
         'title' => '一室一厅C户型',
         'images' => [
         "public/assets/images/detail#1.png",
-        "public/assets/images/detail#1.png",
     ],
     ],
     [
-        'title' => '一室一厅C户型',
+        'title' => '一室一厅C户型#',
         'images' => [
+        "public/assets/images/detail#1.png",
         "public/assets/images/detail#1.png",
     ],
     ]

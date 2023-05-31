@@ -4,28 +4,22 @@ namespace Wuchuheng\GeneratePdf;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Endroid\QrCode\Color\Color;
-use Endroid\QrCode\Encoding\Encoding;
-use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelLow;
-use Endroid\QrCode\Logo\Logo;
 use Endroid\QrCode\QrCode;
-use Endroid\QrCode\RoundBlockSizeMode\RoundBlockSizeModeMargin;
-use Endroid\QrCode\Writer\PngWriter;
 use TCPDF;
 use Wuchuheng\GeneratePdf\Seeds\SeedData;
 
 class MYPDF extends TCPDF {
-    public int $_sideMargin= 10;
+    public $_sideMargin= 10;
 
     // 表格边框style
-    public  array $tableBorder = ['LTRB' => array('width' => 0.5, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => [189, 189, 189])];
+    public  $tableBorder = ['LTRB' => array('width' => 0.2, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => [189, 189, 189])];
 
     // 微软雅黑字体: 这个手动导入，详细说明看README.md
-    public string $font= 'microsoftyahei';
+    public $font= 'microsoftyahei';
 
     //Page header height
-    private int $headerHeight = 30;
-    private int $footHeight = 15;
+    private $headerHeight = 30;
+    private $footHeight = 15;
     public function Header():void {
         $border = 0;
         // Set font
@@ -68,9 +62,9 @@ class MYPDF extends TCPDF {
     }
 
     // 行最小高度
-    private int $_miniRowHeight = 10;
+    private  $_miniRowHeight = 10;
     // 写入表格第一行
-    public function writeFirstTableRowInBody(array $headerData):void {
+    public function writeFirstTableRowInBody( $headerData) {
         $this->setFont($this->font, '', 10);
         $x = $this->_sideMargin;
         $y = $this->GetY();
@@ -114,13 +108,13 @@ class MYPDF extends TCPDF {
         return $maxHeight;
     }
     // 取消色,用于划线
-    public  array $cancelColor = [197, 200, 209];
+    public $cancelColor = [197, 200, 209];
 
     // 字的默认色彩
-    public  array $textColor = [0, 0, 0];
+    public $textColor = [0, 0, 0];
 
     // 写入表格其它行
-    public function writeTableRowsInBody(array $tableRows): void {
+    public function writeTableRowsInBody($tableRows) {
         // 设置字体
         $this->setFont($this->font, '', 9);
         // 在空白页面中先计算出每一行的可能的最大高度
@@ -269,7 +263,7 @@ class MYPDF extends TCPDF {
         }
     }
 
-    private function _writeNo1CellForLastRow(int $rowHeight, string $name, int $border): void {
+    private function _writeNo1CellForLastRow($rowHeight, $name, $border) {
         // 第一行
         $fistCellWidth = $this->getBodyWidth() * 0.8;
         $x = $this->_sideMargin;
@@ -410,17 +404,17 @@ class MYPDF extends TCPDF {
         );
     }
 
-    private function _writeSummaryRowBorder(float $width, float $rowHeight, float $x, float $y, float $fistCellWidth, array $border): void {
+    private function _writeSummaryRowBorder($width, $rowHeight, $x, $y, $fistCellWidth, $border) {
         $this->MultiCell(
             $width,
             $rowHeight,
             '',
             $border,
-            $align='R',
-            $fill=false,
-            $ln=1,
+            'R',
+            false,
+            1,
             $x,
-            $y,
+            $y
         );
     }
 
@@ -429,13 +423,13 @@ class MYPDF extends TCPDF {
      * 获取在页面中有效的最大Y轴数
      * @return float
      */
-    private function _getMaxYInBody(): float {
+    private function _getMaxYInBody() {
         // :xxx 我不知道这里为什么要减50,但只有减去50才能让换页判断生效，不然就排版短码
         return $this->getPageHeight() + $this->headerHeight - 50;
     }
 
     // 写入表格最后一行
-    public function writeLastRow(array $summaryData): void {
+    public function writeLastRow($summaryData) {
         // 每一行的高度
         $rowHeight = 10;
         // 第一行
@@ -469,7 +463,7 @@ class MYPDF extends TCPDF {
      * 写入用户信息
      * @return void
      */
-    public function writeUserInfo(array $userInfo): void
+    public function writeUserInfo($userInfo)
     {
         // 在pdf中写入空行
         $rowHeight = 30;
@@ -507,7 +501,7 @@ class MYPDF extends TCPDF {
             $x,
             $y + $rowHeight / 2,
             '方案说明：',
-            $order,
+            $order
         );
         // 写入第一行第2列第一行
         $x = $this->getBodyWidth() + $this->_sideMargin - 30;
@@ -523,7 +517,7 @@ class MYPDF extends TCPDF {
         $this->_writeUserInfoNo1CellNo2RowCell2($this->getBodyWidth(), $y);
     }
 
-    private function _writeUserInfoNo1CellNo2RowCell2(float $x, float $y): void {
+    private function _writeUserInfoNo1CellNo2RowCell2($x, $y) {
         $this->setFont($this->font, 'B', 9);
         $this->MultiCell(
             30,
@@ -539,35 +533,28 @@ class MYPDF extends TCPDF {
         );
     }
 
-    private function _writeUserInfoNo1CellNo2Row(string $text, string $logo, float $x, float $y, float $size): void
+    private function _writeUserInfoNo1CellNo2Row($text, $logo, $x, $y, $size)
     {
-        $writer = new PngWriter();
-        // Create QR code
-        $qrCode = QrCode::create($text)
-            ->setEncoding(new Encoding('UTF-8'))
-            ->setErrorCorrectionLevel(new ErrorCorrectionLevelLow())
-            ->setSize($size)
-            ->setMargin(10)
-            ->setRoundBlockSizeMode(new RoundBlockSizeModeMargin())
-            ->setForegroundColor(new Color(0, 0, 0))
-            ->setBackgroundColor(new Color(255, 255, 255));
-        // Create generic logo
-        $logo = Logo::create($logo)->setResizeToWidth($size * 0.25);
-        // Create generic label
-        $result = $writer->write(
-            $qrCode,
-            $logo
-        );
-        $this->SetMargins(10, 10, 10);
-        // Retrieve the base64 image data
-        $base64Image = $result->getDataUri();
+        $qrCode = new QrCode($text);
+
+        $qrCode->setSize($size);
+        $qrCode->setLogoPath($logo);
+        $qrCode->setLogoWidth($size * 0.25); // Set the logo width (optional)
+        $qrCode->setLogoHeight($size * 0.25); // Set the logo height (optional)
+        $qrCode->setMargin(10);
+//        $qrCode->setBackgroundColor([255, 255, 255]);
+//        $qrCode->setForegroundColor([0, 0, 0]);
+        $qrCode->setEncoding('UTF-8');
+
+//        // Retrieve the base64 image data
+        $base64Image = $qrCode->writeDataUri();
         // Decode the base64 image data
         $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $base64Image));
         // Add the image to the PDF
         $this->Image('@' . $imageData, $x, $y);
     }
 
-    private function _writeUserInfoNo1CellNo1Row(float $width, float $height, float $x, float $y, string $text, float $order): void
+    private function _writeUserInfoNo1CellNo1Row($width, $height, $x, $y, $text, $order)
     {
         $this->MultiCell(
             $width,
@@ -583,7 +570,7 @@ class MYPDF extends TCPDF {
         );
     }
 
-    public function writeDetail(array $detailItems): void
+    public function writeDetail(array $detailItems)
     {
         $y = $this->GetY();
         foreach ($detailItems as $item) {
@@ -600,7 +587,7 @@ class MYPDF extends TCPDF {
                 $ln=1,
                 $x,
                 $y,
-                $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0, $valign='M', $fitcell=true,
+                $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0, $valign='M', $fitcell=true
             );
             $y += $textHeight;
             foreach ($item['images'] as $index => $image) {
@@ -625,14 +612,14 @@ class MYPDF extends TCPDF {
                     300,
                     $palign='',
                     $ismask=false,
-                    $imgmask=false,
+                    $imgmask=false
                 );
                 $y += $imageHeight;
             }
         }
     }
 
-    private function _calculateRowMaxHeight(array $tableRows): array
+    private function _calculateRowMaxHeight($tableRows)
     {
         $result = [];
         foreach ($tableRows as $row) {
@@ -647,7 +634,7 @@ class MYPDF extends TCPDF {
             $text = $row[$index];
             $headerInfo = SeedData::getHeaderCellByIndex($index, $this->getBodyWidth());
             $maxHeight = max($this->getStringHeight($headerInfo['width'], $text), $maxHeight);
-            $result = array(...$result, $maxHeight);
+            $result[] = $maxHeight;
         }
         return $result;
     }

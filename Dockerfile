@@ -20,16 +20,14 @@ RUN echo '' > /etc/apt/sources.list; \
     echo 'deb-src https://mirrors.aliyun.com/debian/ bullseye-backports main non-free contrib' >> /etc/apt/sources.list;
 
 # To install gd extension.
-RUN apt-get update && apt-get install -y \
-		libfreetype6-dev \
-		libjpeg62-turbo-dev \
-		libpng-dev \
-	&& docker-php-ext-configure gd --with-freetype --with-jpeg \
-	&& docker-php-ext-install -j$(nproc) gd
+RUN apt update -y
+RUN apt -y install libfreetype6-dev
+RUN apt -y install libjpeg62-turbo-dev
+RUN apt-get -y install libpng-dev
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+RUN docker-php-ext-install -j$(nproc) gd
 
 # To install zip extension
-RUN apt-get install -y libzip-dev;\
-    docker-php-ext-configure zip --with-libzip; \
-    docker-php-ext-install zip;
-
-
+RUN apt-get install -y libzip-dev;
+RUN docker-php-ext-configure zip --with-libzip;
+RUN docker-php-ext-install zip;

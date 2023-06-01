@@ -82,5 +82,8 @@ class MYPDF extends TCPDF {
     }
 ```
 
-> 字体来源 [github.com/zongren/font](https://github.com/zongren/font)
+> 字体pingfangSCLight来源 [github.com/zongren/font](https://github.com/zongren/font)
 
+> 字体[github.com/adobe-fonts/source-han-sans/releases](https://github.com/be5invis/source-han-sans-ttf/releases)来源
+
+下载字体后是*ttc*格式，然后在[字体转换网站](https://transfonter.org/ttc-unpack)进行转为*ttf*,并选择其中需要的*ttf*下载下来使用

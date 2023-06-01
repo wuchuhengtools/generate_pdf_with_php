@@ -15,6 +15,7 @@ $ php vendor/tecnickcom/tcpdf/tools/tcpdf_addfont.php -i src/public/assets/fonts
 导入成功后，会在`vendor/tecnickcom/tcpdf/fonts/`生相关的字体文件名，然后就可以使用字体了
 
 
+
 ### 1.3 生成pdf
 ```bash 
 $ php src/main.php
@@ -48,3 +49,38 @@ $this->setFont('microsoftyahei');
 
 * gd
 * zip
+
+## 2 如何导入*PingFang-SC-Light`字体?
+
+```bash
+$  php vendor/tecnickcom/tcpdf/tools/tcpdf_addfont.php -i src/public/assets/fonts/PingFang-SC-Light.ttf  
+
+>>> Converting fonts for TCPDF:
+*** Output dir set to /www/vendor/tecnickcom/tcpdf/fonts/
++++ OK   : /www/src/public/assets/fonts/PingFang-SC-Light.ttf added as pingfangsclight
+>>> Process successfully completed!
+
+```
+
+然后在*TCPDF*中修改要使用的字体
+
+**main.php**
+``` bash
+<?php
+
+// ...
+
+class MYPDF extends TCPDF {
+    public $_sideMargin= 10;
+
+    // 表格边框style
+    public  $tableBorder = ['LTRB' => array('width' => 0.2, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => [189, 189, 189])];
+
+    // 微软雅黑字体: 这个手动导入，详细说明看README.md
+    public $font= 'pingfangsclight';
+    // ...
+    }
+```
+
+> 字体来源 [github.com/zongren/font](https://github.com/zongren/font)
+

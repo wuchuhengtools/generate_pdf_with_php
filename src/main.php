@@ -14,8 +14,8 @@ class MYPDF extends TCPDF {
     // 表格边框style
     public  $tableBorder = ['LTRB' => array('width' => 0.2, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => [189, 189, 189])];
 
-    // 微软雅黑字体: 这个手动导入，详细说明看README.md
-    public $font= 'microsoftyahei';
+    // 平方字体: 这个手动导入，详细说明看README.md
+    public $font= 'pingfangsclight';
 
     //Page header height
     private $headerHeight = 30;
